@@ -1,19 +1,43 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
 
-export interface AppError extends Error {
-  statusCode?: number;
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperational: boolean = true
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
 }
 
-export const errorHandler = (err: AppError, req: Request, res: Response, next: NextFunction) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || 'Internal Server Error';
+export const asyncHandler = (fn: Function) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next);
+  };
+};
 
-  logger.error('Request error', { statusCode, message, url: req.url, method: req.method });
+export const globalErrorHandler = (
+  err: AppError | Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  let error = { ...err };
+  error.message = err.message;
 
-  res.status(statusCode).json({
+  if (err instanceof AppError) {
+    logger.error('AppError', { statusCode: err.statusCode, message: err.message });
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+    });
+  }
+
+  logger.error('Unhandled Error', { error: err.message, stack: err.stack });
+  res.status(500).json({
     success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: 'Internal Server Error',
   });
 };

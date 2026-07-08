@@ -1,0 +1,32 @@
+.responsive-table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-height: 600px;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.dark .responsive-table-container {
+  border-color: #374151;
+}
+
+.responsive-table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.responsive-table-container thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.responsive-table-container tbody tr:last-child td {
+  border-bottom: none;
+}
+
+@media (max-width: 768px) {
+  .responsive-table-container {
+    max-height: 400px;
+  }
+}

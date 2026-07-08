@@ -1,12 +1,15 @@
-FROM node:20-alpine
+FROM node:18-alpine
 
-WORKDIR /app/backend
+WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
-COPY dist ./dist
+COPY tsconfig.json .
+COPY src ./src
+
+RUN npm run build
 
 EXPOSE 3001
 
-CMD ["node", "dist/server.js"]
+CMD ["npm", "start"]
