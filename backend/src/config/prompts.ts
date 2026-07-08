@@ -5,15 +5,19 @@ Output: {"name": {"value": "John Doe", "confidence": 0.95}, "email": {"value": "
 
 Example 2 - Merged Columns:
 Input: {"Contact Info": "John Doe (john@example.com, 9876543210)", "Source": "leads_on_demand"}
-Output: {"name": {"value": "John Doe", "confidence": 0.88}, "email": {"value": "john@example.com", "confidence": 0.91}, "mobile_without_country_code": {"value": "9876543210", "confidence": 0.85}}
+Output: {"name": {"value": "John Doe", "confidence": 0.88}, "email": {"value": "john@example.com", "confidence": 0.91}, "mobile_without_country_code": {"value": "9876543210", "confidence": 0.85}, "data_source": {"value": "leads_on_demand", "confidence": 0.99}}
 
 Example 3 - Multiple Emails:
-Input: {"Name": "Sarah Johnson", "Email Addresses": "sarah@main.com, sarah@alt.com"}
-Output: {"name": {"value": "Sarah Johnson", "confidence": 0.96}, "email": {"value": "sarah@main.com", "confidence": 0.94}, "crm_note": {"value": "Additional email: sarah@alt.com", "confidence": 0.92}}
+Input: {"Name": "Sarah Johnson", "Email Addresses": "sarah@main.com, sarah@alt.com", "Status": "Hot Lead"}
+Output: {"name": {"value": "Sarah Johnson", "confidence": 0.96}, "email": {"value": "sarah@main.com", "confidence": 0.94}, "crm_note": {"value": "Additional email: sarah@alt.com", "confidence": 0.92}, "crm_status": {"value": "GOOD_LEAD_FOLLOW_UP", "confidence": 0.8}}
 
 Example 4 - Excel Date:
 Input: {"Name": "Rajesh Patel", "Date Created": 45000, "Email": "rajesh@example.com"}
 Output: {"name": {"value": "Rajesh Patel", "confidence": 0.95}, "created_at": {"value": "2023-01-01T00:00:00Z", "confidence": 0.89}, "email": {"value": "rajesh@example.com", "confidence": 0.97}}
+
+Example 5 - Ambiguous Data:
+Input: {"Lead Name": "Priya Singh", "Phone": "+91-9876543213", "Email": "N/A", "Notes": "Called on 2026-05-13"}
+Output: {"name": {"value": "Priya Singh", "confidence": 0.94}, "mobile_without_country_code": {"value": "9876543213", "confidence": 0.9}, "country_code": {"value": "+91", "confidence": 0.87}, "crm_note": {"value": "Called on 2026-05-13", "confidence": 0.92}, "_skip": {"value": false}}
 `;
 
 export const generateSystemPrompt = (): string => {
@@ -32,6 +36,7 @@ RULES:
 5. Use first email/mobile, put extras in crm_note
 6. Confidence: 0.95+ = high, 0.5-0.8 = medium, <0.5 = low
 7. Return ONLY valid JSON
+8. Handle merged columns, multiple emails/phones, and messy data intelligently
 
 FEW-SHOT EXAMPLES:
 ${FEW_SHOT_EXAMPLES}
